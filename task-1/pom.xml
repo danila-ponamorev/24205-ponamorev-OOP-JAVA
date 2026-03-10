@@ -5,12 +5,12 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>game</groupId>
-    <artifactId>bulls-and-cows</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <artifactId>game</artifactId>
+    <version>1.0</version>
     <packaging>jar</packaging>
 
     <name>Bulls and Cows Game</name>
-    <description>Laboratory work for OOP course at FIT NSU</description>
+    <description>Laboratory work</description>
 
     <properties>
         <maven.compiler.source>17</maven.compiler.source>
@@ -33,6 +33,12 @@
             <version>${junit.version}</version>
             <scope>test</scope>
         </dependency>
+    
+      <dependency>
+        <groupId>com.google.gwt</groupId>
+        <artifactId>gwt-dev</artifactId>
+        <version>2.8.2</version>
+      </dependency>
     </dependencies>
 
     <build>
