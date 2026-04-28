@@ -1,7 +1,9 @@
 package calculator;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -16,14 +18,28 @@ public class CommandFactory {
 
     /**
      * Constructor that loads command classes from a configuration file.
-     * @param configFileName The name of the configuration file
+     * Tries to load from file system first, then falls back to classpath resources.
+     * @param configPath The path to the configuration file (can be relative or absolute)
      */
-    public CommandFactory(String configFileName) {
-        CalculatorLogger.info("Loading commands from config: " + configFileName);
-        try (InputStream is = CommandFactory.class.getResourceAsStream("/" + configFileName)) {
-            if (is == null) throw new FileNotFoundException("Config file not found in classpath: " + configFileName);
+    public CommandFactory(String configPath) {
+        CalculatorLogger.info("Loading commands from config: " + configPath);
+        BufferedReader reader = null;
+        
+        try {
+            File file = new File(configPath);
+            if (file.exists()) {
+                CalculatorLogger.fine("Loading from file: " + file.getAbsolutePath());
+                reader = new BufferedReader(new FileReader(file));
+            } else {
+                InputStream is = CommandFactory.class.getResourceAsStream("/" + configPath);
+                if (is != null) {
+                    CalculatorLogger.fine("Loading from classpath: " + configPath);
+                    reader = new BufferedReader(new InputStreamReader(is));
+                } else {
+                    throw new FileNotFoundException("Config file not found: " + configPath + " (tried file system and classpath)");
+                }
+            }
             
-            BufferedReader reader = new BufferedReader(new InputStreamReader(is));
             String className;
             while ((className = reader.readLine()) != null) {
                 className = className.trim();
@@ -45,7 +61,15 @@ public class CommandFactory {
                 }
             }
         } catch (IOException e) {
-            CalculatorLogger.severe("Failed to load factory configuration");
+            CalculatorLogger.severe("Failed to load factory configuration: " + e.getMessage());
+        } finally {
+            if (reader != null) {
+                try {
+                    reader.close();
+                } catch (IOException e) {
+                    CalculatorLogger.severe("Failed to close config file reader");
+                }
+            }
         }
     }
 

@@ -39,6 +39,14 @@ public class ExecutionContext {
     }
 
     /**
+     * Clears the stack and defined variables.
+     */
+    public void clearStack() {
+        stack.clear();
+        defines.clear();
+    }   
+    
+    /**
      * Defines a variable with a given name and value.
      * @param name The name of the variable
      * @param value The value of the variable

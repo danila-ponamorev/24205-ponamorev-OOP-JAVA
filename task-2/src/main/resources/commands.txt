@@ -3,3 +3,8 @@ calculator.commands.AddCommand
 calculator.commands.SqrtCommand
 calculator.commands.PrintCommand
 calculator.commands.DefineCommand
+custom.commands.PowerCommand
+custom.commands.SaveStackCommand
+custom.commands.LoadStackCommand
+custom.commands.SaveDefinesCommand
+custom.commands.LoadDefinesCommand

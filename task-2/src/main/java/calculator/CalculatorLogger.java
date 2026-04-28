@@ -1,7 +1,9 @@
 package calculator;
 
 import java.io.IOException;
+import java.util.logging.ConsoleHandler;
 import java.util.logging.FileHandler;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.logging.SimpleFormatter;
 
@@ -18,7 +20,15 @@ public class CalculatorLogger {
         try {
             FileHandler fileHandler = new FileHandler("game.log", true);
             fileHandler.setFormatter(new SimpleFormatter());
+            fileHandler.setLevel(Level.ALL);
             logger.addHandler(fileHandler);
+            
+            ConsoleHandler consoleHandler = new ConsoleHandler();
+            consoleHandler.setFormatter(new SimpleFormatter());
+            consoleHandler.setLevel(Level.ALL);
+            logger.addHandler(consoleHandler);
+            
+            logger.setLevel(Level.ALL);
             logger.setUseParentHandlers(false);
             logger.info("Logger is initialized.");
         } catch (IOException e) {

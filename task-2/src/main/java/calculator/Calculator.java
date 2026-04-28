@@ -38,11 +38,12 @@ public class Calculator {
         String[] parts = line.split("\\s+");
         String cmdName = parts[0];
         List<String> args = Arrays.asList(parts).subList(1, parts.length);
-
+        System.out.println("Executing command: " + cmdName + " with args: " + args);
         try {
             Command command = factory.createCommand(cmdName);
             CalculatorLogger.info("Executing: " + cmdName + " with args " + args);
             command.execute(context, args);
+            CalculatorLogger.info(cmdName + " executed successfully. Stack: " + context.getStack() + ", Defines: " + context.getDefines());
         } catch (Exception e) {
             CalculatorLogger.severe("Execution error: " + e.getMessage());
             System.err.println("Error executing '" + cmdName + "': " + e.getMessage());

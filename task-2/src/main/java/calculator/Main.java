@@ -1,5 +1,6 @@
 package calculator;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 /**
@@ -10,11 +11,25 @@ import java.io.IOException;
  */
 public class Main {
     public static void main(String[] args) {
-        CommandFactory factory = new CommandFactory("commands.txt");
+        String configFile = "commands.txt";
+        String inputFile = null;
+        
+        if (args.length > 0) {
+            if (args[0].endsWith(".txt") || args[0].contains(File.separator) || args[0].contains("/")) {
+                configFile = args[0];
+                if (args.length > 1) {
+                    inputFile = args[1];
+                }
+            } else {
+                inputFile = args[0];
+            }
+        }
+        
+        CommandFactory factory = new CommandFactory(configFile);
         Calculator calculator = new Calculator(factory);
 
-        if (args.length > 0) {
-            try (FileInputStream fis = new FileInputStream(args[0])) {
+        if (inputFile != null) {
+            try (FileInputStream fis = new FileInputStream(inputFile)) {
                 calculator.executeStream(fis);
             } catch (IOException e) {
                 System.err.println("Failed to read file: " + e.getMessage());
