@@ -4,11 +4,14 @@ import java.io.InputStream;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Scanner;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Main calculator class that processes commands and maintains execution context.
  */
 public class Calculator {
+    private static final Logger logger = LoggerFactory.getLogger(Calculator.class);
     private final ExecutionContext context;
     private final CommandFactory factory;
 
@@ -41,11 +44,11 @@ public class Calculator {
         System.out.println("Executing command: " + cmdName + " with args: " + args);
         try {
             Command command = factory.createCommand(cmdName);
-            CalculatorLogger.info("Executing: " + cmdName + " with args " + args);
+            logger.info("Executing: {} with args {}", cmdName, args);
             command.execute(context, args);
-            CalculatorLogger.info(cmdName + " executed successfully. Stack: " + context.getStack() + ", Defines: " + context.getDefines());
+            logger.info("{} executed successfully. Stack: {}, Defines: {}", cmdName, context.getStack(), context.getDefines());
         } catch (Exception e) {
-            CalculatorLogger.severe("Execution error: " + e.getMessage());
+            logger.error("Execution error: {}", e.getMessage(), e);
             System.err.println("Error executing '" + cmdName + "': " + e.getMessage());
         }
     }

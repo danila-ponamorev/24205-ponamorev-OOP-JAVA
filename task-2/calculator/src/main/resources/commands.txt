@@ -1,0 +1,2 @@
+calculator/target/calculator-1.0.jar
+clearstack-command/target/clearstack-command-1.0.jar
