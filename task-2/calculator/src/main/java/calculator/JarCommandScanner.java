@@ -41,8 +41,6 @@ public class JarCommandScanner {
                         classConsumer.accept(clazz);
                     }
                 } catch (ClassNotFoundException | NoClassDefFoundError e) {
-
-                    // Log and skip classes that cannot be loaded
                     logger.error("Failed to load class: " + className + " - " + e.getMessage());
                 }
             }

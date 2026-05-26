@@ -65,6 +65,12 @@ public class CommandFactory {
         }
     }
 
+    /**
+     * Loads command classes from the configuration reader. Each line can be a class name or a path to a JAR file.
+     * @param reader
+     * @param baseDirectory
+     * @throws IOException
+     */
     private void loadCommandsFromConfig(BufferedReader reader, File baseDirectory) throws IOException {
         String line;
         while ((line = reader.readLine()) != null) {
@@ -82,6 +88,12 @@ public class CommandFactory {
         }
     }
 
+    /**
+     * Resolves a JAR file path, checking various locations if the path is not absolute.
+     * @param path The path to the JAR file
+     * @param baseDirectory The base directory to check for relative paths
+     * @return The resolved File object for the JAR file
+     */
     private File resolveJarFile(String path, File baseDirectory) {
         File jarFile = new File(path);
         if (!jarFile.isAbsolute()) {
@@ -113,6 +125,10 @@ public class CommandFactory {
         return jarFile;
     }
 
+    /**
+     * Loads a command class by its fully qualified name and registers it if it implements Command and has @CommandName annotation.
+     * @param className
+     */
     private void loadCommandClass(String className) {
         try {
             Class<?> clazz = Class.forName(className);
@@ -122,6 +138,10 @@ public class CommandFactory {
         }
     }
 
+    /**
+     * Registers a command class if it implements Command and has @CommandName annotation.
+     * @param clazz The class to register
+     */
     private void registerCommandClass(Class<?> clazz) {
         if (clazz == null) {
             return;
