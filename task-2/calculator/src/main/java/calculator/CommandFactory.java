@@ -7,6 +7,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -65,14 +66,11 @@ public class CommandFactory {
         }
     }
 
-    /**
-     * Loads command classes from the configuration reader. Each line can be a class name or a path to a JAR file.
-     * @param reader
-     * @param baseDirectory
-     * @throws IOException
-     */
     private void loadCommandsFromConfig(BufferedReader reader, File baseDirectory) throws IOException {
         String line;
+        boolean selfJarLoaded = false;
+        File currentJarFile = getCurrentJarFile();
+
         while ((line = reader.readLine()) != null) {
             line = line.trim();
             if (line.isEmpty() || line.startsWith("#")) {
@@ -81,19 +79,38 @@ public class CommandFactory {
 
             File jarFile = resolveJarFile(line, baseDirectory);
             if (jarFile.exists() && configReader.isJarFile(jarFile)) {
+                // Проверяем, не указал ли пользователь наш же JAR вручную в конфиге
+                if (currentJarFile != null && jarFile.getCanonicalPath().equals(currentJarFile.getCanonicalPath())) {
+                    selfJarLoaded = true;
+                }
                 jarScanner.scanJar(jarFile, this::registerCommandClass);
             } else {
                 loadCommandClass(line);
             }
         }
+
+        if (!selfJarLoaded && currentJarFile != null && currentJarFile.exists()) {
+            logger.info("Automatically scanning self JAR for internal commands: {}", currentJarFile.getName());
+            jarScanner.scanJar(currentJarFile, this::registerCommandClass);
+        }
     }
 
-    /**
-     * Resolves a JAR file path, checking various locations if the path is not absolute.
-     * @param path The path to the JAR file
-     * @param baseDirectory The base directory to check for relative paths
-     * @return The resolved File object for the JAR file
-     */
+        private File getCurrentJarFile() {
+        try {
+            URI jarUri = CommandFactory.class.getProtectionDomain()
+                    .getCodeSource()
+                    .getLocation()
+                    .toURI();
+            
+            if (jarUri.getPath().endsWith(".jar")) {
+                return new File(jarUri);
+            }
+        } catch (Exception e) {
+            logger.error("Failed to determine current JAR path", e);
+        }
+        return null;
+    }
+
     private File resolveJarFile(String path, File baseDirectory) {
         File jarFile = new File(path);
         if (!jarFile.isAbsolute()) {
@@ -125,10 +142,6 @@ public class CommandFactory {
         return jarFile;
     }
 
-    /**
-     * Loads a command class by its fully qualified name and registers it if it implements Command and has @CommandName annotation.
-     * @param className
-     */
     private void loadCommandClass(String className) {
         try {
             Class<?> clazz = Class.forName(className);
@@ -138,10 +151,6 @@ public class CommandFactory {
         }
     }
 
-    /**
-     * Registers a command class if it implements Command and has @CommandName annotation.
-     * @param clazz The class to register
-     */
     private void registerCommandClass(Class<?> clazz) {
         if (clazz == null) {
             return;

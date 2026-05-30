@@ -12,11 +12,13 @@ import java.util.jar.JarFile;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 /**
  * Scans JAR files and delivers found command candidate classes to a consumer.
  */
 public class JarCommandScanner {
     private static final Logger logger = LoggerFactory.getLogger(JarCommandScanner.class);
+
     /**
      * Scans the provided JAR file and applies the consumer to each class that can be loaded.
      * Only classes that are command candidates are forwarded to the consumer.
@@ -26,22 +28,40 @@ public class JarCommandScanner {
      * @throws IOException if the JAR cannot be opened
      */
     public void scanJar(File jarFile, Consumer<Class<?>> classConsumer) throws IOException {
+        // Определяем, является ли сканируемый JAR-файл нашей собственной программой
+        boolean isSelfJar = jarFile.getName().startsWith("calculator");
+
         try (JarFile jar = new JarFile(jarFile);
              URLClassLoader classLoader = new URLClassLoader(new URL[]{jarFile.toURI().toURL()}, getClass().getClassLoader())) {
+            
             Enumeration<JarEntry> entries = jar.entries();
             while (entries.hasMoreElements()) {
                 JarEntry entry = entries.nextElement();
+                
                 if (entry.isDirectory() || !entry.getName().endsWith(".class")) {
                     continue;
                 }
-                String className = entry.getName().replace('/', '.').replaceAll("\\.class$", "");
+
+                String entryName = entry.getName();
+
+                if (isSelfJar && !entryName.startsWith("calculator/")) {
+                    continue;
+                }
+                if (entryName.contains("module-info.class") || entryName.startsWith("META-INF/")) {
+                    continue;
+                }
+
+                String className = entryName.replace('/', '.').replaceAll("\\.class$", "");
                 try {
-                    Class<?> clazz = Class.forName(className, false, classLoader);
+                    ClassLoader loaderToUse = isSelfJar ? getClass().getClassLoader() : classLoader;
+                    
+                    Class<?> clazz = Class.forName(className, false, loaderToUse);
                     if (isCommandCandidate(clazz)) {
                         classConsumer.accept(clazz);
                     }
-                } catch (ClassNotFoundException | NoClassDefFoundError e) {
-                    logger.error("Failed to load class: " + className + " - " + e.getMessage());
+                } catch (Throwable e) { // Ловим Throwable, чтобы NoClassDefFoundError или IllegalAccessError не вешали поток
+                    // Log and skip classes that cannot be loaded
+                    logger.warn("Skipping class {}: {}", className, e.getMessage());
                 }
             }
         }
