@@ -77,7 +77,7 @@ public class Main {
 
 
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-            System.out.println("Shutting down gracefully...");
+            System.out.println("Shutting down disgracefully...");
             threadPool.shutdown();
             allThreads.forEach(Thread::interrupt);
         }));
